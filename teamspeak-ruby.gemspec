@@ -10,5 +10,5 @@ Gem::Specification.new do |s|
   s.files         = Dir.glob('lib/**/*')
   s.require_paths = ['lib']
   s.homepage      = 'http://pyrohail.com'
-  s.license       = 'MIT'
+  s.license       = 'MPL'
 end
