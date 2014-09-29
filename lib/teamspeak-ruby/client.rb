@@ -1,4 +1,4 @@
-require 'socket'
+require "socket"
 
 module Teamspeak
   class Client
@@ -11,8 +11,8 @@ module Teamspeak
 
     # Initializes Client
     #
-    #   connect('voice.domain.com', 88888)
-    def initialize(host = 'localhost', port = 10011)
+    #   connect("voice.domain.com", 88888)
+    def initialize(host = "localhost", port = 10011)
       connect(host, port)
 
       # Throttle commands by default unless connected to localhost
@@ -26,13 +26,13 @@ module Teamspeak
 
     # Connects to a TeamSpeak 3 server
     #
-    #   connect('voice.domain.com', 88888)
-    def connect(host = 'localhost', port = 10011)
+    #   connect("voice.domain.com", 88888)
+    def connect(host = "localhost", port = 10011)
       @sock = TCPSocket.new(host, port)
 
       # Check if the response is the same as a normal teamspeak 3 server.
-      if @sock.gets.strip != 'TS3'
-        raise InvalidServer, 'Server is not responding as a normal TeamSpeak 3 server.'
+      if @sock.gets.strip != "TS3"
+        raise InvalidServer, "Server is not responding as a normal TeamSpeak 3 server."
       end
 
       # Remove useless text from the buffer.
@@ -41,21 +41,21 @@ module Teamspeak
 
     # Disconnects from the TeamSpeak 3 server
     def disconnect
-      @sock.puts 'quit'
+      @sock.puts "quit"
       @sock.close
     end
 
     # Authenticates with the TeamSpeak 3 server
     #
-    #   login('serveradmin', 'H8YlK1f9')
+    #   login("serveradmin", "H8YlK1f9")
     def login(user, pass)
-      command('login', {'client_login_name' => user, 'client_login_password' => pass})
+      command("login", {client_login_name: user, client_login_password: pass})
     end
 
     # Sends command to the TeamSpeak 3 server and returns the response
     #
-    #   command('use', {'sid' => 1}, '-away')
-    def command(cmd, params = {}, options = '')
+    #   command("use", {sid: 1}, "-away")
+    def command(cmd, params = {}, options = "")
       if @flood_protection
         @flood_current += 1
 
@@ -73,8 +73,8 @@ module Teamspeak
         end
       end
 
-      out = ''
-      response = ''
+      out = ""
+      response = ""
 
       out += cmd
 
@@ -82,14 +82,14 @@ module Teamspeak
         out += " #{key}=#{encode_param(value.to_s)}"
       end
 
-      out += ' ' + options
+      out += " " + options
 
       @sock.puts out
 
       while true
         response += @sock.gets
         
-        if response.index(' msg=')
+        if response.index(" msg=")
           break
         end
       end
@@ -97,12 +97,12 @@ module Teamspeak
       # Array of commands that are expected to return as an array.
       # Not sure - clientgetids
       should_be_array = [
-        'bindinglist', 'serverlist', 'servergrouplist', 'servergroupclientlist',
-        'servergroupsbyclientid', 'servergroupclientlist', 'logview', 'channellist',
-        'channelfind', 'channelgrouplist', 'channelgrouppermlist', 'channelpermlist', 'clientlist',
-        'clientfind', 'clientdblist', 'clientdbfind', 'channelclientpermlist', 'permissionlist',
-        'permoverview', 'privilegekeylist', 'messagelist', 'complainlist', 'banlist', 'ftlist',
-        'custominfo'
+        "bindinglist", "serverlist", "servergrouplist", "servergroupclientlist",
+        "servergroupsbyclientid", "servergroupclientlist", "logview", "channellist",
+        "channelfind", "channelgrouplist", "channelgrouppermlist", "channelpermlist", "clientlist",
+        "clientfind", "clientdblist", "clientdbfind", "channelclientpermlist", "permissionlist",
+        "permoverview", "privilegekeylist", "messagelist", "complainlist", "banlist", "ftlist",
+        "custominfo"
       ]
 
       parsed_response = parse_response(response)
@@ -110,14 +110,15 @@ module Teamspeak
       return should_be_array.include?(cmd) ? parsed_response : parsed_response.first
     end
 
+  private
     def parse_response(response)
       out = []
 
-      response.split('|').each do |key|
+      response.split("|").each do |key|
         data = {}
 
-        key.split(' ').each do |key|
-          value = key.split('=', 2)
+        key.split(" ").each do |key|
+          value = key.split("=", 2)
 
           data[value[0]] = decode_param(value[1])
         end
@@ -135,44 +136,42 @@ module Teamspeak
       # Return as integer if possible
       return param.to_i if param.to_i.to_s == param
 
-      param.gsub!('\\\\', '\\')
-      param.gsub!('\\/', '/')
-      param.gsub!('\\s', ' ')
-      param.gsub!('\\p', '|')
-      param.gsub!('\\a', '\a')
-      param.gsub!('\\b', '\b')
-      param.gsub!('\\f', '\f')
-      param.gsub!('\\n', '\n')
-      param.gsub!('\\r', '\r')
-      param.gsub!('\\t', '\t')
-      param.gsub!('\\v', '\v')
+      param.gsub!("\\\\", "\\")
+      param.gsub!("\\/", "/")
+      param.gsub!("\\s", " ")
+      param.gsub!("\\p", "|")
+      param.gsub!("\\a", "\a")
+      param.gsub!("\\b", "\b")
+      param.gsub!("\\f", "\f")
+      param.gsub!("\\n", "\n")
+      param.gsub!("\\r", "\r")
+      param.gsub!("\\t", "\t")
+      param.gsub!("\\v", "\v")
 
       param
     end
 
     def encode_param(param)
-      param.gsub!('\\', '\\\\')
-      param.gsub!('/', '\\/')
-      param.gsub!(' ', '\\s')
-      param.gsub!('|', '\\p')
-      param.gsub!('\a', '\\a')
-      param.gsub!('\b', '\\b')
-      param.gsub!('\f', '\\f')
-      param.gsub!('\n', '\\n')
-      param.gsub!('\r', '\\r')
-      param.gsub!('\t', '\\t')
-      param.gsub!('\v', '\\v')
+      param.gsub!("\\", "\\\\")
+      param.gsub!("/", "\\/")
+      param.gsub!(" ", "\\s")
+      param.gsub!("|", "\\p")
+      param.gsub!("\a", "\\a")
+      param.gsub!("\b", "\\b")
+      param.gsub!("\f", "\\f")
+      param.gsub!("\n", "\\n")
+      param.gsub!("\r", "\\r")
+      param.gsub!("\t", "\\t")
+      param.gsub!("\v", "\\v")
 
       param
     end
 
     def check_response_error(response)
-      id = response.first['id'] || 0
-      message = response.first['msg'] || 0
+      id = response.first["id"] || 0
+      message = response.first["msg"] || 0
 
       raise ServerError.new(id, message) unless id == 0
     end
-
-    private(:parse_response, :decode_param, :encode_param, :check_response_error)
   end
 end
